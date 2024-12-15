@@ -1,0 +1,33 @@
+{
+    "name": "sprintf/symfony-metadata-loader",
+    "description": "Metadata load library for Symfony",
+    "minimum-stability": "stable",
+    "license": "LGPL-2.1-or-later",
+    "authors": [
+        {
+            "name": "Albert Stepantsev",
+            "email": "albert.stepantsev@sprintf.ru"
+        }
+    ],
+    "homepage": "https://sprintf.ru",
+    "require": {
+        "php": "^8.2",
+        "ext-curl": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "SprintF\\Metadata\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SprintF\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "codeception/codeception": "^5.1",
+        "codeception/module-asserts": "^3.0",
+        "friendsofphp/php-cs-fixer": "^3.65",
+        "codeception/module-phpbrowser": "*"
+    }
+}
