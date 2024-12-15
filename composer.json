@@ -11,8 +11,7 @@
     ],
     "homepage": "https://sprintf.ru",
     "require": {
-        "php": "^8.2",
-        "ext-curl": "*"
+        "php": "^8.2"
     },
     "autoload": {
         "psr-4": {
@@ -25,6 +24,7 @@
         }
     },
     "require-dev": {
+        "ext-curl": "*",
         "codeception/codeception": "^5.1",
         "codeception/module-asserts": "^3.0",
         "friendsofphp/php-cs-fixer": "^3.65",
