@@ -16,7 +16,7 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
     private array $loadedClasses;
 
     public function __construct(
-        private readonly LoaderInterface $loader,
+        protected readonly LoaderInterface $loader,
     ) {
     }
 
