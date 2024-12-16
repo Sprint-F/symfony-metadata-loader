@@ -70,43 +70,45 @@ abstract class AttributeLoader implements LoaderInterface
 
         // Загружаем данные из атрибутов свойств, определенных в классе
         foreach ($reflectionClass->getProperties() as $property) {
-            // Вся работа идет только со свойствами, определенными именно в этом классе.
-            if ($property->getDeclaringClass()->name === $className) {
-                // Создаем объект $propertyMetadata, если он ранее не был создан
-                if (isset($propertiesMetadata[$property->name])) {
-                    $propertyMetadata = $propertiesMetadata[$property->name];
-                } else {
-                    $propertiesMetadata[$property->name] = $propertyMetadata = new (static::getPropertyMetadataClass())($property->name);
-                    $classMetadata->addPropertyMetadata($propertyMetadata);
-                }
+            // Вся работа идет только со свойствами, определенными именно в этом классе, у которых есть интересуюшие нас атрибуты.
+            if ($property->getDeclaringClass()->name !== $className || count(iterator_to_array($this->loadAttributes($property))) == 0) {
+                continue;
+            }
 
-                // Группы, заданные на уровне класса, добавляем к группам атрибутов (свойств).
-                foreach ($classGroups as $group) {
-                    $propertyMetadata->addGroup($group);
-                }
+            // Создаем объект $propertyMetadata, если он ранее не был создан
+            if (isset($propertiesMetadata[$property->name])) {
+                $propertyMetadata = $propertiesMetadata[$property->name];
+            } else {
+                $propertiesMetadata[$property->name] = $propertyMetadata = new (static::getPropertyMetadataClass())($property->name);
+                $classMetadata->addPropertyMetadata($propertyMetadata);
+            }
 
-                // Затем отрабатываем атрибуты этого свойства (известные этому загрузчику)...
-                foreach ($this->loadAttributes($property) as $attribute) {
-                    // ... атрибуты групп,
-                    if ($attribute instanceof GroupsAttribute) {
-                        foreach ($attribute->getGroups() as $group) {
-                            $propertyMetadata->addGroup($group);
-                        }
-                        continue;
+            // Группы, заданные на уровне класса, добавляем к группам атрибутов (свойств).
+            foreach ($classGroups as $group) {
+                $propertyMetadata->addGroup($group);
+            }
+
+            // Затем отрабатываем атрибуты этого свойства (известные этому загрузчику)...
+            foreach ($this->loadAttributes($property) as $attribute) {
+                // ... атрибуты групп,
+                if ($attribute instanceof GroupsAttribute) {
+                    foreach ($attribute->getGroups() as $group) {
+                        $propertyMetadata->addGroup($group);
                     }
-                    // ... и все остальные атрибуты,
-                    // из которых мы берем их публичные свойства и передаем из значения в метаданные
-                    foreach ($attribute as $attributePublicPropertyName => $attributePublicPropertyValue) {
-                        $propertyMetadata->addDatum($attribute->getKey().'.'.$attributePublicPropertyName, $attributePublicPropertyValue);
-                    }
+                    continue;
+                }
+                // ... и все остальные атрибуты,
+                // из которых мы берем их публичные свойства и передаем из значения в метаданные
+                foreach ($attribute as $attributePublicPropertyName => $attributePublicPropertyValue) {
+                    $propertyMetadata->addDatum($attribute->getKey().'.'.$attributePublicPropertyName, $attributePublicPropertyValue);
                 }
             }
         }
 
         // Загружаем данные из атрибутов методов, определенных в классе
         foreach ($reflectionClass->getMethods() as $method) {
-            // Вся работа идет только с методами, определенными именно в этом классе.
-            if ($method->getDeclaringClass()->name !== $className) {
+            // Вся работа идет только с методами, определенными именно в этом классе, у которых есть интересующие нас атрибуты.
+            if ($method->getDeclaringClass()->name !== $className || count(iterator_to_array($this->loadAttributes($method))) == 0) {
                 continue;
             }
 
