@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace SprintF\Tests\Support;
 
 /**
- * Inherited Methods
+ * Inherited Methods.
+ *
  * @method void wantTo($text)
  * @method void wantToTest($text)
  * @method void execute($callable)
@@ -18,12 +19,12 @@ namespace SprintF\Tests\Support;
  * @method void pause($vars = [])
  *
  * @SuppressWarnings(PHPMD)
-*/
+ */
 class FunctionalTester extends \Codeception\Actor
 {
     use _generated\FunctionalTesterActions;
 
-    /**
+    /*
      * Define custom actions here
      */
 }

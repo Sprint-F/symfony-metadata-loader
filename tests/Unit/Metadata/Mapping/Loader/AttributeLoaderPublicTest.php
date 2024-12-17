@@ -2,10 +2,10 @@
 
 namespace SprintF\Tests\Unit\Metadata\Mapping\Loader;
 
+use SprintF\Metadata\Mapping\Attribute\GroupsAttribute;
 use SprintF\Metadata\Mapping\Attribute\MetadataAttribute;
 use SprintF\Metadata\Mapping\ClassMetadata;
 use SprintF\Metadata\Mapping\Loader\AttributeLoader;
-use SprintF\Metadata\Mapping\Attribute\GroupsAttribute;
 use SprintF\Metadata\Mapping\PropertyMetadata;
 use SprintF\Tests\Support\UnitTester;
 

@@ -71,7 +71,7 @@ abstract class AttributeLoader implements LoaderInterface
         // Загружаем данные из атрибутов свойств, определенных в классе
         foreach ($reflectionClass->getProperties() as $property) {
             // Вся работа идет только со свойствами, определенными именно в этом классе, у которых есть интересуюшие нас атрибуты.
-            if ($property->getDeclaringClass()->name !== $className || count(iterator_to_array($this->loadAttributes($property))) == 0) {
+            if ($property->getDeclaringClass()->name !== $className || 0 === count(iterator_to_array($this->loadAttributes($property)))) {
                 continue;
             }
 
@@ -98,9 +98,9 @@ abstract class AttributeLoader implements LoaderInterface
                     continue;
                 }
                 // ... и все остальные атрибуты,
-                // из которых мы берем их публичные свойства и передаем из значения в метаданные
-                foreach ($attribute as $attributePublicPropertyName => $attributePublicPropertyValue) {
-                    $propertyMetadata->addDatum($attribute->getKey().'.'.$attributePublicPropertyName, $attributePublicPropertyValue);
+                // из которых мы берем их данные и передаем из значения в метаданные
+                foreach ($this->extractDatumFromAttribute($attribute) as $key => $value) {
+                    $propertyMetadata->addDatum($key, $value);
                 }
             }
         }
@@ -108,7 +108,7 @@ abstract class AttributeLoader implements LoaderInterface
         // Загружаем данные из атрибутов методов, определенных в классе
         foreach ($reflectionClass->getMethods() as $method) {
             // Вся работа идет только с методами, определенными именно в этом классе, у которых есть интересующие нас атрибуты.
-            if ($method->getDeclaringClass()->name !== $className || count(iterator_to_array($this->loadAttributes($method))) == 0) {
+            if ($method->getDeclaringClass()->name !== $className || 0 === count(iterator_to_array($this->loadAttributes($method)))) {
                 continue;
             }
 
@@ -147,14 +147,31 @@ abstract class AttributeLoader implements LoaderInterface
                     continue;
                 }
                 // ... и все остальные атрибуты,
-                // из которых мы берем их публичные свойства и передаем из значения в метаданные
-                foreach ($attribute as $attributePublicPropertyName => $attributePublicPropertyValue) {
-                    $propertyMetadata->addDatum($attribute->getKey().'.'.$attributePublicPropertyName, $attributePublicPropertyValue);
+                // из которых мы берем их данные и передаем из значения в метаданные
+                foreach ($this->extractDatumFromAttribute($attribute) as $key => $value) {
+                    $propertyMetadata->addDatum($key, $value);
                 }
             }
         }
 
         return $classMetadata;
+    }
+
+    /**
+     * Метод, проверяющий, будем ли мы обрабатывать данный атрибут в данном контексте?
+     */
+    protected function isKnownAttribute(int $target, string $attributeName): bool
+    {
+        foreach (array_merge(static::getKnownAttributes($target), [GroupsAttribute::class]) as $knownAttribute) {
+            if (
+                is_a($attributeName, $knownAttribute, true)
+                && (is_a($attributeName, MetadataAttribute::class, true) || is_a($attributeName, GroupsAttribute::class, true))
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -177,19 +194,16 @@ abstract class AttributeLoader implements LoaderInterface
     }
 
     /**
-     * Метод, проверяющий, будем ли мы обрабатывать данный атрибут в данном контексте?
+     * Метод, получающий от конкретного атрибута интересующие нас данные.
+     * В базовой реализации работает с атрибутами, наследующимися от класса MetadataAttribute и их публичными свойствами.
+     * В наследниках этого класса может быть расширен.
      */
-    protected function isKnownAttribute(int $target, string $attributeName): bool
+    protected function extractDatumFromAttribute(object $attribute): iterable
     {
-        foreach (array_merge(static::getKnownAttributes($target), [GroupsAttribute::class]) as $knownAttribute) {
-            if (
-                is_a($attributeName, $knownAttribute, true)
-                && (is_a($attributeName, MetadataAttribute::class, true) || is_a($attributeName, GroupsAttribute::class, true))
-            ) {
-                return true;
+        if ($attribute instanceof MetadataAttribute) {
+            foreach ($attribute as $attributePublicPropertyName => $attributePublicPropertyValue) {
+                yield $attribute->getKey().'.'.$attributePublicPropertyName => $attributePublicPropertyValue;
             }
         }
-
-        return false;
     }
 }
