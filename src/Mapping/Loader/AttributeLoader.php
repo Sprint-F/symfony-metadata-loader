@@ -163,10 +163,7 @@ abstract class AttributeLoader implements LoaderInterface
     protected function isKnownAttribute(int $target, string $attributeName): bool
     {
         foreach (array_merge(static::getKnownAttributes($target), [GroupsAttribute::class]) as $knownAttribute) {
-            if (
-                is_a($attributeName, $knownAttribute, true)
-                && (is_a($attributeName, MetadataAttribute::class, true) || is_a($attributeName, GroupsAttribute::class, true))
-            ) {
+            if (is_a($attributeName, $knownAttribute, true)) {
                 return true;
             }
         }
