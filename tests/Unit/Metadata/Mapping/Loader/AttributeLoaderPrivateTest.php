@@ -2,7 +2,6 @@
 
 namespace SprintF\Tests\Unit\Metadata\Mapping\Loader;
 
-use SprintF\Metadata\Mapping\Attribute\GroupsAttribute;
 use SprintF\Metadata\Mapping\Attribute\MetadataAttribute;
 use SprintF\Metadata\Mapping\ClassMetadata;
 use SprintF\Metadata\Mapping\Loader\AttributeLoader;
@@ -132,15 +131,12 @@ class AttributeLoaderPrivateTest extends \Codeception\Test\Unit
 
         $this->assertTrue($isKnownAttribute(\Attribute::TARGET_CLASS, AttrClassA::class));
         $this->assertFalse($isKnownAttribute(\Attribute::TARGET_CLASS, AttrClassB::class));
-        $this->assertTrue($isKnownAttribute(\Attribute::TARGET_CLASS, GroupsAttribute::class));
 
         $this->assertTrue($isKnownAttribute(\Attribute::TARGET_PROPERTY, AttrPropertyA::class));
         $this->assertFalse($isKnownAttribute(\Attribute::TARGET_PROPERTY, AttrPropertyB::class));
-        $this->assertTrue($isKnownAttribute(\Attribute::TARGET_PROPERTY, GroupsAttribute::class));
 
         $this->assertTrue($isKnownAttribute(\Attribute::TARGET_METHOD, AttrMethodA::class));
         $this->assertFalse($isKnownAttribute(\Attribute::TARGET_METHOD, AttrMethodB::class));
-        $this->assertTrue($isKnownAttribute(\Attribute::TARGET_METHOD, GroupsAttribute::class));
     }
 
     public function testIsKnownAttributeInheritance()
@@ -173,17 +169,14 @@ class AttributeLoaderPrivateTest extends \Codeception\Test\Unit
         $this->assertFalse($isKnownAttribute(\Attribute::TARGET_CLASS, AttrClassA::class));
         $this->assertTrue($isKnownAttribute(\Attribute::TARGET_CLASS, AttrClassB::class));
         $this->assertTrue($isKnownAttribute(\Attribute::TARGET_CLASS, AttrClassC::class));
-        $this->assertTrue($isKnownAttribute(\Attribute::TARGET_CLASS, GroupsAttribute::class));
 
         $this->assertFalse($isKnownAttribute(\Attribute::TARGET_PROPERTY, AttrPropertyA::class));
         $this->assertTrue($isKnownAttribute(\Attribute::TARGET_PROPERTY, AttrPropertyB::class));
         $this->assertTrue($isKnownAttribute(\Attribute::TARGET_PROPERTY, AttrPropertyC::class));
-        $this->assertTrue($isKnownAttribute(\Attribute::TARGET_PROPERTY, GroupsAttribute::class));
 
         $this->assertFalse($isKnownAttribute(\Attribute::TARGET_METHOD, AttrMethodA::class));
         $this->assertTrue($isKnownAttribute(\Attribute::TARGET_METHOD, AttrMethodB::class));
         $this->assertTrue($isKnownAttribute(\Attribute::TARGET_METHOD, AttrMethodC::class));
-        $this->assertTrue($isKnownAttribute(\Attribute::TARGET_METHOD, GroupsAttribute::class));
     }
 
     public function testLoadAttributesByClass()

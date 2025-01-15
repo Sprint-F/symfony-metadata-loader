@@ -17,8 +17,10 @@ use SprintF\Tests\Support\UnitTester;
 class AttrForFactoryTestA1 extends MetadataAttribute
 {
     public function __construct(
-        public $a1,
+        readonly public mixed $a1,
+        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
+        parent::__construct($groups);
     }
 
     public function getKey(): string
@@ -30,8 +32,10 @@ class AttrForFactoryTestA1 extends MetadataAttribute
 class AttrForFactoryTestA2 extends MetadataAttribute
 {
     public function __construct(
-        public $a2,
+        readonly public mixed $a2,
+        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
+        parent::__construct($groups);
     }
 
     public function getKey(): string
@@ -43,8 +47,10 @@ class AttrForFactoryTestA2 extends MetadataAttribute
 class AttrForFactoryTestB1 extends MetadataAttribute
 {
     public function __construct(
-        public $b1,
+        readonly public mixed $b1,
+        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
+        parent::__construct($groups);
     }
 
     public function getKey(): string
@@ -56,8 +62,10 @@ class AttrForFactoryTestB1 extends MetadataAttribute
 class AttrForFactoryTestB2 extends MetadataAttribute
 {
     public function __construct(
-        public $b2,
+        readonly public mixed $b2,
+        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
+        parent::__construct($groups);
     }
 
     public function getKey(): string
@@ -69,8 +77,10 @@ class AttrForFactoryTestB2 extends MetadataAttribute
 class AttrForFactoryTestC1 extends MetadataAttribute
 {
     public function __construct(
-        public $c1,
+        readonly public mixed $c1,
+        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
+        parent::__construct($groups);
     }
 
     public function getKey(): string
@@ -82,8 +92,10 @@ class AttrForFactoryTestC1 extends MetadataAttribute
 class AttrForFactoryTestC2 extends MetadataAttribute
 {
     public function __construct(
-        public $c2,
+        readonly public mixed $c2,
+        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
+        parent::__construct($groups);
     }
 
     public function getKey(): string
@@ -170,25 +182,25 @@ class ClassMetadataFactoryTest extends \Codeception\Test\Unit
     public function testLoadMetadataForSimpleClass()
     {
         $factory = new ClassMetadataFactory($this->loader);
-        $metadata = $factory->getMetadataFor(SimpleExample::class);
+        $classMetadata = $factory->getMetadataFor(SimpleExample::class);
 
-        $this->assertInstanceOf(ClassMetadataForFactoryTest::class, $metadata);
-        $this->assertSame(1, $metadata->getData()['A.a1'] ?? null);
-        $this->assertSame(null, $metadata->getData()['A.a2'] ?? null);
+        $this->assertInstanceOf(ClassMetadataForFactoryTest::class, $classMetadata);
+        $this->assertSame(1, $classMetadata->getDataByGroups()['A.a1'] ?? null);
+        $this->assertSame(null, $classMetadata->getDataByGroups()['A.a2'] ?? null);
 
-        $this->assertCount(2, $metadata->getPropertiesMetadata());
+        $this->assertCount(2, $classMetadata->getPropertiesMetadataByGroups());
 
-        $this->assertInstanceOf(AttrMetadataForFactoryTest::class, $metadata->getPropertiesMetadata()['x']);
-        $this->assertSame(2, $metadata->getPropertiesMetadata()['x']->getData()['B.b1'] ?? null);
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['x']->getData()['B.b2'] ?? null);
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['x']->getData()['C.c1'] ?? null);
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['x']->getData()['C.c2'] ?? null);
+        $this->assertInstanceOf(AttrMetadataForFactoryTest::class, $classMetadata->getPropertiesMetadataByGroups()['x']);
+        $this->assertSame(2, $classMetadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['B.b1'] ?? null);
+        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['B.b2'] ?? null);
+        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['C.c1'] ?? null);
+        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['C.c2'] ?? null);
 
-        $this->assertInstanceOf(AttrMetadataForFactoryTest::class, $metadata->getPropertiesMetadata()['y']);
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['y']->getData()['B.b1'] ?? null);
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['y']->getData()['B.b2'] ?? null);
-        $this->assertSame(3, $metadata->getPropertiesMetadata()['y']->getData()['C.c1'] ?? null);
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['y']->getData()['C.c2'] ?? null);
+        $this->assertInstanceOf(AttrMetadataForFactoryTest::class, $classMetadata->getPropertiesMetadataByGroups()['getY']);
+        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['B.b1'] ?? null);
+        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['B.b2'] ?? null);
+        $this->assertSame(3, $classMetadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['C.c1'] ?? null);
+        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['C.c2'] ?? null);
     }
 
     public function testLoadMetadataForExtendedClass()
@@ -197,21 +209,21 @@ class ClassMetadataFactoryTest extends \Codeception\Test\Unit
         $metadata = $factory->getMetadataFor(ExtendedExample::class);
 
         $this->assertInstanceOf(ClassMetadataForFactoryTest::class, $metadata);
-        $this->assertSame(1, $metadata->getData()['A.a1'] ?? null);
-        $this->assertSame(4, $metadata->getData()['A.a2'] ?? null);
+        $this->assertSame(1, $metadata->getDataByGroups()['A.a1'] ?? null);
+        $this->assertSame(4, $metadata->getDataByGroups()['A.a2'] ?? null);
 
-        $this->assertCount(2, $metadata->getPropertiesMetadata());
+        $this->assertCount(2, $metadata->getPropertiesMetadataByGroups());
 
-        $this->assertInstanceOf(AttrMetadataForFactoryTest::class, $metadata->getPropertiesMetadata()['x']);
-        $this->assertSame(2, $metadata->getPropertiesMetadata()['x']->getData()['B.b1'] ?? null);
-        $this->assertSame(5, $metadata->getPropertiesMetadata()['x']->getData()['B.b2'] ?? null);
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['x']->getData()['C.c1'] ?? null);
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['x']->getData()['C.c2'] ?? null);
+        $this->assertInstanceOf(AttrMetadataForFactoryTest::class, $metadata->getPropertiesMetadataByGroups()['x']);
+        $this->assertSame(2, $metadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['B.b1'] ?? null);
+        $this->assertSame(5, $metadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['B.b2'] ?? null);
+        $this->assertSame(null, $metadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['C.c1'] ?? null);
+        $this->assertSame(null, $metadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['C.c2'] ?? null);
 
-        $this->assertInstanceOf(AttrMetadataForFactoryTest::class, $metadata->getPropertiesMetadata()['y']);
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['y']->getData()['B.b1'] ?? null);
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['y']->getData()['B.b2'] ?? null);
-        $this->assertSame(3, $metadata->getPropertiesMetadata()['y']->getData()['C.c1'] ?? null);
-        $this->assertSame(6, $metadata->getPropertiesMetadata()['y']->getData()['C.c2'] ?? null);
+        $this->assertInstanceOf(AttrMetadataForFactoryTest::class, $metadata->getPropertiesMetadataByGroups()['getY']);
+        $this->assertSame(null, $metadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['B.b1'] ?? null);
+        $this->assertSame(null, $metadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['B.b2'] ?? null);
+        $this->assertSame(3, $metadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['C.c1'] ?? null);
+        $this->assertSame(6, $metadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['C.c2'] ?? null);
     }
 }

@@ -13,28 +13,18 @@ interface PropertyMetadataInterface
     public function getName(): string;
 
     /**
-     * Добавляет свойство к указанной группе метаданных.
+     * Добавляет метаданные свойства для конкретной группы.
      */
-    public function addGroup(string $group): self;
+    public function addDatum(string $group, string $key, mixed $datum): self;
 
     /**
-     * Возвращает список всех групп метаданных, в которые входит это свойство.
-     *
-     * @return array<int, string>
-     */
-    public function getGroups(): array;
-
-    /**
-     * Добавляет метаданные свойства.
-     */
-    public function addDatum(string $key, mixed $datum): self;
-
-    /**
-     * Возвращает все метаданные свойства, включая их ключи и значения.
-     *
+     * Возвращает метаданные свойства по указанным группам.
+     * Если группы не указаны, возвращает только данные для группы '*'.
+     * 
+     * @param array<string> $groups
      * @return iterable<string, mixed>
      */
-    public function getData(): iterable;
+    public function getDataByGroups(array $groups = []): iterable;
 
     /**
      * Добавляет метаданные к текущим.

@@ -2,11 +2,12 @@
 
 namespace SprintF\Tests\Unit\Metadata\Mapping\Loader;
 
-use SprintF\Metadata\Mapping\Attribute\GroupsAttribute;
 use SprintF\Metadata\Mapping\Attribute\MetadataAttribute;
 use SprintF\Metadata\Mapping\ClassMetadata;
+use SprintF\Metadata\Mapping\ClassMetadataInterface;
 use SprintF\Metadata\Mapping\Loader\AttributeLoader;
 use SprintF\Metadata\Mapping\PropertyMetadata;
+use SprintF\Metadata\Mapping\PropertyMetadataInterface;
 use SprintF\Tests\Support\UnitTester;
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -22,8 +23,12 @@ class AttrForLoadTestClassX extends MetadataAttribute
     }
 
     public function __construct(
-        public $x,
+        readonly public mixed $x,
+        readonly public mixed $y = null,
+        readonly public mixed $z = null,
+        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
+        parent::__construct($groups);
     }
 }
 
@@ -36,8 +41,10 @@ class AttrForLoadTestClassY extends MetadataAttribute
     }
 
     public function __construct(
-        public $y,
+        readonly public mixed $y,
+        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
+        parent::__construct($groups);
     }
 }
 
@@ -50,8 +57,10 @@ class AttrForLoadTestPropA extends MetadataAttribute
     }
 
     public function __construct(
-        public $a,
+        readonly public mixed $a,
+        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
+        parent::__construct($groups);
     }
 }
 
@@ -64,8 +73,10 @@ class AttrForLoadTestPropB extends MetadataAttribute
     }
 
     public function __construct(
-        public $b,
+        readonly public mixed $b,
+        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
+        parent::__construct($groups);
     }
 }
 
@@ -78,10 +89,13 @@ class AttrForLoadTestMethodA extends MetadataAttribute
     }
 
     public function __construct(
-        public $a,
+        readonly public mixed $a,
+        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
+        parent::__construct($groups);
     }
 }
+
 #[\Attribute(\Attribute::TARGET_METHOD)]
 class AttrForLoadTestMethodB extends MetadataAttribute
 {
@@ -91,10 +105,13 @@ class AttrForLoadTestMethodB extends MetadataAttribute
     }
 
     public function __construct(
-        public $b,
+        readonly public mixed $b,
+        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
+        parent::__construct($groups);
     }
 }
+
 #[\Attribute(\Attribute::TARGET_METHOD)]
 class AttrForLoadTestMethodC extends MetadataAttribute
 {
@@ -104,47 +121,45 @@ class AttrForLoadTestMethodC extends MetadataAttribute
     }
 
     public function __construct(
-        public $c,
+        readonly public mixed $c,
+        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
+        parent::__construct($groups);
     }
-}
-
-#[\Attribute] class Groups extends GroupsAttribute
-{
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 // ---- Metadata -------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
 
-class ClassMetadataForLoadTest extends ClassMetadata
+class ClassMetadataForLoadTest extends ClassMetadata implements ClassMetadataInterface
 {
-    public function getX()
+    public function getXByDefaultGroup()
     {
-        return $this->getData()['X.x'] ?? null;
+        return $this->getDataByGroups([MetadataAttribute::DEFAULT_GROUP])['X.x'] ?? null;
     }
 
-    public function getY()
+    public function getYByDefaultGroup()
     {
-        return $this->getData()['Y.y'] ?? null;
+        return $this->getDataByGroups([MetadataAttribute::DEFAULT_GROUP])['Y.y'] ?? null;
     }
 }
 
-class PropMetadataForLoadTest extends PropertyMetadata
+class PropMetadataForLoadTest extends PropertyMetadata implements PropertyMetadataInterface
 {
-    public function getA()
+    public function getAByDefaultGroup()
     {
-        return $this->getData()['A.a'] ?? null;
+        return $this->getDataByGroups([MetadataAttribute::DEFAULT_GROUP])['A.a'] ?? null;
     }
 
-    public function getB()
+    public function getBByDefaultGroup()
     {
-        return $this->getData()['B.b'] ?? null;
+        return $this->getDataByGroups([MetadataAttribute::DEFAULT_GROUP])['B.b'] ?? null;
     }
 
-    public function getC()
+    public function getCByDefaultGroup()
     {
-        return $this->getData()['C.c'] ?? null;
+        return $this->getDataByGroups([MetadataAttribute::DEFAULT_GROUP])['C.c'] ?? null;
     }
 }
 
@@ -156,71 +171,62 @@ class ForLoadZero
 {
 }
 
-#[AttrForLoadTestClassX(x: 1)]
-#[AttrForLoadTestClassY(y: 2)]
+#[AttrForLoadTestClassX(x: 1, y: 2, z: 3, groups: ['group_1'])]
+#[AttrForLoadTestClassY(y: 3, groups: ['group_1', 'group_2'])]
 class ForLoad1
 {
 }
 
-#[AttrForLoadTestClassX(x: 1)]
-#[AttrForLoadTestClassY(y: 2)]
+#[AttrForLoadTestClassX(x: 1, z: 3)]
+#[AttrForLoadTestClassY(y: 2, groups: [MetadataAttribute::DEFAULT_GROUP, 'group_1', 'group_2'])]
 class ForLoad2
 {
     #[AttrForLoadTestPropA(a: 1)]
     public $foo;
-    #[AttrForLoadTestPropB(b: 2)]
+
+    #[AttrForLoadTestPropB(b: 2, groups: [MetadataAttribute::DEFAULT_GROUP, 'group_2'])]
     protected $bar;
+
     #[AttrForLoadTestPropA(a: 3)]
-    #[AttrForLoadTestPropB(b: 4)]
+    #[AttrForLoadTestPropB(b: 4, groups: ['group_1', 'group_2'])]
     private $baz;
 }
 
-#[AttrForLoadTestClassX(x: 1)]
-#[AttrForLoadTestClassY(y: 2)]
-#[Groups(1)]
+#[AttrForLoadTestClassX(x: 1, groups: ['group_1'])]
+#[AttrForLoadTestClassY(y: 2, groups: ['group_2'])]
 class ForLoad3
 {
-    #[AttrForLoadTestPropA(a: 1)]
-    #[Groups(2)]
+    #[AttrForLoadTestPropA(a: 1, groups: ['group_1'])]
     public $foo;
-    #[AttrForLoadTestPropB(b: 2)]
-    #[Groups([3, 4])]
+
+    #[AttrForLoadTestPropB(b: 2, groups: ['group_1'])]
     protected $bar;
-    #[AttrForLoadTestPropA(a: 3)]
-    #[AttrForLoadTestPropB(b: 4)]
+
+    #[AttrForLoadTestPropA(a: 3, groups: ['group_1'])]
+    #[AttrForLoadTestPropB(b: 4, groups: ['group_2'])]
     private $baz;
 }
 
-#[Groups(1)]
 class ForLoad4
 {
-    #[AttrForLoadTestMethodA(a: 1)]
+    #[AttrForLoadTestMethodA(a: 1, groups: ['group_1'])]
     public function getFoo()
     {
     }
 
-    #[AttrForLoadTestMethodA(a: 1)]
-    #[Groups(2)]
+    #[AttrForLoadTestMethodA(a: 1, groups: ['group_2'])]
     protected function getFooButNotLoad($invalid)
     {
     }
 
-    #[AttrForLoadTestMethodB(b: 2)]
-    #[Groups([3, 4])]
-    private function isBar()
+    #[AttrForLoadTestMethodB(b: 3, groups: ['group_1'])]
+    #[AttrForLoadTestMethodC(c: 4, groups: ['group_5'])]
+    public function getBaz()
     {
     }
 
-    #[AttrForLoadTestMethodB(b: 3)]
-    #[AttrForLoadTestMethodC(c: 4)]
-    #[Groups(5)]
-    public function hasBaz()
-    {
-    }
-
-    #[AttrForLoadTestMethodA(a: 5)]
-    #[Groups([6, 7, 8])]
-    private function setBla()
+    #[AttrForLoadTestMethodA(a: 5, groups: ['group_6'])]
+    private function getBla()
     {
     }
 }
@@ -262,116 +268,166 @@ class AttributeLoaderPublicTest extends \Codeception\Test\Unit
 
     public function testZero()
     {
-        $metadata = $this->loader->loadClassMetadata(ForLoadZero::class);
+        $classMetadata = $this->loader->loadClassMetadata(ForLoadZero::class);
 
-        $this->assertInstanceOf(ClassMetadataForLoadTest::class, $metadata);
-        $this->assertCount(0, $metadata->getData());
-        $this->assertCount(0, $metadata->getPropertiesMetadata());
+        $this->assertInstanceOf(ClassMetadataForLoadTest::class, $classMetadata);
+        $this->assertCount(0, $classMetadata->getData());
+        $this->assertCount(0, $classMetadata->getPropertiesMetadata());
     }
 
     public function testLoadClassMetadata()
     {
-        $metadata = $this->loader->loadClassMetadata(ForLoad1::class);
+        $classMetadata = $this->loader->loadClassMetadata(ForLoad1::class);
 
-        $this->assertInstanceOf(ClassMetadataForLoadTest::class, $metadata);
-        $this->assertCount(2, $metadata->getData());
-        $this->assertSame(1, $metadata->getX());
-        $this->assertSame(2, $metadata->getY());
-        $this->assertCount(0, $metadata->getPropertiesMetadata());
+        $this->assertInstanceOf(ClassMetadataForLoadTest::class, $classMetadata);
+
+        // Проверяем работу getDataByGroups
+        $metadataByGroup = $classMetadata->getDataByGroups(['group_1']);
+        $this->assertCount(4, $metadataByGroup);
+        $this->assertEquals(1, $metadataByGroup['X.x']);
+        $this->assertEquals(3, $metadataByGroup['X.z']);
+        $this->assertCount(0, $classMetadata->getPropertiesMetadata());
     }
 
     public function testLoadClassPropertyMetadata()
     {
-        $metadata = $this->loader->loadClassMetadata(ForLoad2::class);
+        $classMetadata = $this->loader->loadClassMetadata(ForLoad2::class);
 
-        $this->assertInstanceOf(ClassMetadataForLoadTest::class, $metadata);
-        $this->assertCount(2, $metadata->getData());
-        $this->assertSame(1, $metadata->getX());
-        $this->assertSame(2, $metadata->getY());
-        $this->assertCount(3, $metadata->getPropertiesMetadata());
+        $this->assertInstanceOf(ClassMetadataForLoadTest::class, $classMetadata);
 
-        $this->assertSame('foo', $metadata->getPropertiesMetadata()['foo']->getName());
-        $this->assertSame([], $metadata->getPropertiesMetadata()['foo']->getGroups());
-        $this->assertSame(1, $metadata->getPropertiesMetadata()['foo']->getA());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['foo']->getB());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['foo']->getC());
+        // Проверяем данные класса по группе group_1
+        $metadataByGroup = $classMetadata->getDataByGroups(['group_1']);
+        $this->assertCount(1, $metadataByGroup);
+        $this->assertEquals(2, $metadataByGroup['Y.y']);
 
-        $this->assertSame('bar', $metadata->getPropertiesMetadata()['bar']->getName());
-        $this->assertSame([], $metadata->getPropertiesMetadata()['bar']->getGroups());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['bar']->getA());
-        $this->assertSame(2, $metadata->getPropertiesMetadata()['bar']->getB());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['bar']->getC());
+        // Проверяем данные класса по дефолтной группе
+        $metadataByGroup = $classMetadata->getDataByGroups([MetadataAttribute::DEFAULT_GROUP]);
+        $this->assertCount(3, $metadataByGroup);
+        $this->assertEquals(1, $metadataByGroup['X.x']);
+        $this->assertEquals(3, $metadataByGroup['X.z']);
 
-        $this->assertSame('baz', $metadata->getPropertiesMetadata()['baz']->getName());
-        $this->assertSame([], $metadata->getPropertiesMetadata()['baz']->getGroups());
-        $this->assertSame(3, $metadata->getPropertiesMetadata()['baz']->getA());
-        $this->assertSame(4, $metadata->getPropertiesMetadata()['baz']->getB());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['baz']->getC());
+        // Проверяем свойства
+        $propertiesMetadata = $classMetadata->getPropertiesMetadataByGroups([MetadataAttribute::DEFAULT_GROUP]);
+        $this->assertCount(3, $propertiesMetadata);
+
+        // Проверяем foo
+        $this->assertArrayHasKey('foo', $propertiesMetadata);
+        $metadataOfFooProperty = $propertiesMetadata['foo']->getDataByGroups([MetadataAttribute::DEFAULT_GROUP]);
+        $this->assertEquals(1, $metadataOfFooProperty['A.a']);
+        $this->assertArrayNotHasKey('B.b', $metadataOfFooProperty);
+
+        // Проверяем bar
+        $this->assertArrayHasKey('bar', $propertiesMetadata);
+        $metadataOfBarProperty = $propertiesMetadata['bar']->getDataByGroups([MetadataAttribute::DEFAULT_GROUP]);
+        $this->assertArrayNotHasKey('A.a', $metadataOfBarProperty);
+        $this->assertEquals(2, $metadataOfBarProperty['B.b']);
+
+        // Проверяем baz
+        $this->assertArrayHasKey('baz', $propertiesMetadata);
+        $metadataOfBazProperty = $propertiesMetadata['baz']->getDataByGroups([MetadataAttribute::DEFAULT_GROUP]);
+        $this->assertEquals(3, $metadataOfBazProperty['A.a']);
     }
 
     public function testLoadClassPropertyWithGroupsMetadata()
     {
-        $metadata = $this->loader->loadClassMetadata(ForLoad3::class);
+        $classMetadata = $this->loader->loadClassMetadata(ForLoad3::class);
 
-        $this->assertInstanceOf(ClassMetadataForLoadTest::class, $metadata);
-        $this->assertCount(2, $metadata->getData());
-        $this->assertSame(1, $metadata->getX());
-        $this->assertSame(2, $metadata->getY());
-        $this->assertCount(3, $metadata->getPropertiesMetadata());
+        // Проверяем данные класса для группы 1
+        $metadataByGroup = $classMetadata->getDataByGroups(['group_1']);
+        $this->assertCount(1, $metadataByGroup);
+        $this->assertEquals(1, $metadataByGroup['X.x']);
 
-        $this->assertSame('foo', $metadata->getPropertiesMetadata()['foo']->getName());
-        $this->assertSame(['1', '2'], $metadata->getPropertiesMetadata()['foo']->getGroups());
-        $this->assertSame(1, $metadata->getPropertiesMetadata()['foo']->getA());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['foo']->getB());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['foo']->getC());
+        // Проверяем свойства для разных групп (группы 1, 2, 4)
+        $propertiesMetadataByGroups = $classMetadata->getPropertiesMetadataByGroups(['group_1', 'group_2', 'group_4']);
+        $this->assertCount(3, $propertiesMetadataByGroups);
 
-        $this->assertSame('bar', $metadata->getPropertiesMetadata()['bar']->getName());
-        $this->assertSame(['1', '3', '4'], $metadata->getPropertiesMetadata()['bar']->getGroups());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['bar']->getA());
-        $this->assertSame(2, $metadata->getPropertiesMetadata()['bar']->getB());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['bar']->getC());
+        // Проверяем foo (группы 1, 2)
+        $metadataOfFooProperty = $propertiesMetadataByGroups['foo']->getDataByGroups(['group_1', 'group_2']);
+        $this->assertEquals(1, $metadataOfFooProperty['A.a']);
 
-        $this->assertSame('baz', $metadata->getPropertiesMetadata()['baz']->getName());
-        $this->assertSame(['1'], $metadata->getPropertiesMetadata()['baz']->getGroups());
-        $this->assertSame(3, $metadata->getPropertiesMetadata()['baz']->getA());
-        $this->assertSame(4, $metadata->getPropertiesMetadata()['baz']->getB());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['baz']->getC());
+        // Проверяем bar (группы 1, 3, 4)
+        $metadataOfBarProperty = $propertiesMetadataByGroups['bar']->getDataByGroups(['group_1', 'group_3', 'group_4']);
+        $this->assertEquals(2, $metadataOfBarProperty['B.b']);
+
+        // Проверяем baz (только группа 1)
+        $metadataOfBazProperty = $propertiesMetadataByGroups['baz']->getDataByGroups(['group_1']);
+        $this->assertEquals(3, $metadataOfBazProperty['A.a']);
     }
 
     public function testLoadClassMethodWithGroupsMetadata()
     {
-        $metadata = $this->loader->loadClassMetadata(ForLoad4::class);
+        $classMetadata = $this->loader->loadClassMetadata(ForLoad4::class);
 
-        $this->assertInstanceOf(ClassMetadataForLoadTest::class, $metadata);
-        $this->assertCount(0, $metadata->getData());
-        $this->assertSame(null, $metadata->getX());
-        $this->assertSame(null, $metadata->getY());
-        $this->assertCount(4, $metadata->getPropertiesMetadata());
+        // Проверяем методы для разных групп
+        $methodsMetadata = $classMetadata->getPropertiesMetadataByGroups(['group_1', 'group_3', 'group_4', 'group_6', 'group_8']);
+        $this->assertCount(3, $methodsMetadata);
 
-        $this->assertSame('foo', $metadata->getPropertiesMetadata()['foo']->getName());
-        $this->assertSame(['1'], $metadata->getPropertiesMetadata()['foo']->getGroups());
-        $this->assertSame(1, $metadata->getPropertiesMetadata()['foo']->getA());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['foo']->getB());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['foo']->getC());
+        // Проверяем getFoo (группа 1)
+        $this->assertArrayHasKey('getFoo', $methodsMetadata);
+        $fooData = $methodsMetadata['getFoo']->getDataByGroups(['group_1']);
+        $this->assertEquals(1, $fooData['A.a']);
 
-        $this->assertFalse(isset($metadata->getPropertiesMetadata()['fooButNotLoad']));
+        // Проверяем что метод с invalid параметром не загружен
+        $this->assertArrayNotHasKey('getFooButNotLoad', $methodsMetadata);
 
-        $this->assertSame('bar', $metadata->getPropertiesMetadata()['bar']->getName());
-        $this->assertSame(['1', '3', '4'], $metadata->getPropertiesMetadata()['bar']->getGroups());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['bar']->getA());
-        $this->assertSame(2, $metadata->getPropertiesMetadata()['bar']->getB());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['bar']->getC());
+        // Проверяем getBaz (группы 1, 5)
+        $bazData = $methodsMetadata['getBaz']->getDataByGroups(['group_1', 'group_5']);
+        $this->assertEquals(3, $bazData['B.b']);
+        $this->assertEquals(4, $bazData['C.c']);
 
-        $this->assertSame('baz', $metadata->getPropertiesMetadata()['baz']->getName());
-        $this->assertSame(['1', '5'], $metadata->getPropertiesMetadata()['baz']->getGroups());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['baz']->getA());
-        $this->assertSame(3, $metadata->getPropertiesMetadata()['baz']->getB());
-        $this->assertSame(4, $metadata->getPropertiesMetadata()['baz']->getC());
+        // Проверяем getBla (группы 1, 6, 7, 8)
+        $blaData = $methodsMetadata['getBla']->getDataByGroups(['group_6']);
+        $this->assertEquals(5, $blaData['A.a']);
+    }
 
-        $this->assertSame('bla', $metadata->getPropertiesMetadata()['bla']->getName());
-        $this->assertSame(['1', '6', '7', '8'], $metadata->getPropertiesMetadata()['bla']->getGroups());
-        $this->assertSame(5, $metadata->getPropertiesMetadata()['bla']->getA());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['bla']->getB());
-        $this->assertSame(null, $metadata->getPropertiesMetadata()['bla']->getC());
+    public function testDefaultGroupMetadata()
+    {
+        $classMetadata = $this->loader->loadClassMetadata(ForLoad2::class);
+
+        $this->assertInstanceOf(ClassMetadataForLoadTest::class, $classMetadata);
+
+        // Проверяем что данные попали в группу '*'
+        $metadataByDefault = $classMetadata->getDataByGroups([MetadataAttribute::DEFAULT_GROUP]);
+        $this->assertCount(3, $metadataByDefault);
+        $this->assertArrayHasKey('X.x', $metadataByDefault);
+        $this->assertArrayHasKey('Y.y', $metadataByDefault);
+        $this->assertEquals(1, $metadataByDefault['X.x']);
+        $this->assertEquals(2, $metadataByDefault['Y.y']);
+    }
+
+    public function testSpecificGroupsMetadata()
+    {
+        $classMetadata = $this->loader->loadClassMetadata(ForLoad1::class);
+
+        // Проверяем данные для group_1
+        $metadataByGroup = $classMetadata->getDataByGroups(['group_1']);
+        $this->assertNotEmpty($metadataByGroup);
+        $this->assertEquals(1, $metadataByGroup['X.x']);
+        $this->assertEquals(3, $metadataByGroup['Y.y']);
+
+        // Проверяем данные для group_2
+        $metadataByGroup = $classMetadata->getDataByGroups(['group_2']);
+        $this->assertNotEmpty($metadataByGroup);
+        $this->assertEquals(3, $metadataByGroup['Y.y']);
+    }
+
+    public function testMultipleGroupsMetadata()
+    {
+        $classMetadata = $this->loader->loadClassMetadata(ForLoad1::class);
+
+        // Проверяем данные для нескольких групп
+        $metadataByMultiGroup = $classMetadata->getDataByGroups(['group_1', 'group_2']);
+        $this->assertCount(4, $metadataByMultiGroup);
+        $this->assertEquals(1, $metadataByMultiGroup['X.x']);
+        $this->assertEquals(3, $metadataByMultiGroup['Y.y']);
+    }
+
+    public function testEmptyGroupsMetadata()
+    {
+        $classMetadata = $this->loader->loadClassMetadata(ForLoad1::class);
+
+        // Проверяем что для несуществующей группы данных нет
+        $metadataByNonExistentGroup = $classMetadata->getDataByGroups(['non_existent_group']);
+        $this->assertCount(0, $metadataByNonExistentGroup);
     }
 }

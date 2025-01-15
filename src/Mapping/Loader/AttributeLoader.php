@@ -2,11 +2,11 @@
 
 namespace SprintF\Metadata\Mapping\Loader;
 
-use SprintF\Metadata\Mapping\Attribute\GroupsAttribute;
 use SprintF\Metadata\Mapping\Attribute\MetadataAttribute;
 use SprintF\Metadata\Mapping\ClassMetadata;
 use SprintF\Metadata\Mapping\ClassMetadataInterface;
 use SprintF\Metadata\Mapping\PropertyMetadata;
+use SprintF\Metadata\Mapping\PropertyMetadataInterface;
 
 /**
  * Загрузка метаданных через атрибуты PHP.
@@ -50,107 +50,33 @@ abstract class AttributeLoader implements LoaderInterface
         $classMetadata = new (static::getClassMetadataClass())($className);
         $reflectionClass = $classMetadata->getReflectionClass();
 
-        $classGroups = [];
-
-        $propertiesMetadata = $classMetadata->getPropertiesMetadata();
-
         // Загружаем данные из атрибутов класса
         foreach ($this->loadAttributes($reflectionClass) as $attribute) {
-            // ... атрибуты групп, заданные на уровне класса,
-            if ($attribute instanceof GroupsAttribute) {
-                $classGroups = $attribute->getGroups();
-                continue;
-            }
-            // ... и все остальные атрибуты,
-            // из которых мы берем их публичные свойства и передаем из значения в метаданные
-            foreach ($attribute as $attributePublicPropertyName => $attributePublicPropertyValue) {
-                $classMetadata->addDatum($attribute->getKey().'.'.$attributePublicPropertyName, $attributePublicPropertyValue);
-            }
+            $this->handleAttribute($attribute, $classMetadata);
         }
 
-        // Загружаем данные из атрибутов свойств, определенных в классе
+        // Загружаем данные из атрибутов свойств
         foreach ($reflectionClass->getProperties() as $property) {
-            // Вся работа идет только со свойствами, определенными именно в этом классе, у которых есть интересуюшие нас атрибуты.
             if ($property->getDeclaringClass()->name !== $className || 0 === count(iterator_to_array($this->loadAttributes($property)))) {
                 continue;
             }
 
-            // Создаем объект $propertyMetadata, если он ранее не был создан
-            if (isset($propertiesMetadata[$property->name])) {
-                $propertyMetadata = $propertiesMetadata[$property->name];
-            } else {
-                $propertiesMetadata[$property->name] = $propertyMetadata = new (static::getPropertyMetadataClass())($property->name);
-                $classMetadata->addPropertyMetadata($propertyMetadata);
-            }
+            $propertyMetadata = $this->getOrCreatePropertyMetadata($classMetadata, $property->name);
 
-            // Группы, заданные на уровне класса, добавляем к группам атрибутов (свойств).
-            foreach ($classGroups as $group) {
-                $propertyMetadata->addGroup($group);
-            }
-
-            // Затем отрабатываем атрибуты этого свойства (известные этому загрузчику)...
+            // Обрабатываем атрибуты свойства
             foreach ($this->loadAttributes($property) as $attribute) {
-                // ... атрибуты групп,
-                if ($attribute instanceof GroupsAttribute) {
-                    foreach ($attribute->getGroups() as $group) {
-                        $propertyMetadata->addGroup($group);
-                    }
-                    continue;
-                }
-                // ... и все остальные атрибуты,
-                // из которых мы берем их данные и передаем из значения в метаданные
-                foreach ($this->extractDatumFromAttribute($attribute) as $key => $value) {
-                    $propertyMetadata->addDatum($key, $value);
-                }
+                $this->handleAttribute($attribute, $propertyMetadata);
             }
         }
 
-        // Загружаем данные из атрибутов методов, определенных в классе
+        // Загружаем данные из атрибутов методов
         foreach ($reflectionClass->getMethods() as $method) {
-            // Вся работа идет только с методами, определенными именно в этом классе, у которых есть интересующие нас атрибуты.
-            if ($method->getDeclaringClass()->name !== $className || 0 === count(iterator_to_array($this->loadAttributes($method)))) {
-                continue;
-            }
+            $propertyName = lcfirst($method->name);
+            $propertyMetadata = $this->getOrCreatePropertyMetadata($classMetadata, $propertyName);
 
-            // в целях обратной совместимости с компонентом Serializer
-            if (0 === stripos($method->name, 'get') && $method->getNumberOfRequiredParameters()) {
-                continue;
-            }
-
-            // Нас интересуют только методы, начинающиеся с get|is|has|set
-            $accessorOrMutator = preg_match('/^(get|is|has|set)(.+)$/i', $method->name, $matches);
-            if (!$accessorOrMutator) {
-                continue;
-            }
-
-            // Создаем объект $propertyMetadata, если он ранее не был создан
-            $propertyName = lcfirst($matches[2]);
-            if (isset($propertiesMetadata[$propertyName])) {
-                $propertyMetadata = $propertiesMetadata[$propertyName];
-            } else {
-                $propertiesMetadata[$propertyName] = $propertyMetadata = new (static::getPropertyMetadataClass())($propertyName);
-                $classMetadata->addPropertyMetadata($propertyMetadata);
-            }
-
-            // Группы, заданные на уровне класса, добавляем к группам атрибутов (свойств).
-            foreach ($classGroups as $group) {
-                $propertyMetadata->addGroup($group);
-            }
-
-            // Затем отрабатываем атрибуты этого свойства (известные этому загрузчику)...
+            // Обрабатываем атрибуты метода
             foreach ($this->loadAttributes($method) as $attribute) {
-                // ... атрибуты групп,
-                if ($attribute instanceof GroupsAttribute) {
-                    foreach ($attribute->getGroups() as $group) {
-                        $propertyMetadata->addGroup($group);
-                    }
-                    continue;
-                }
-                // ... и все остальные атрибуты,
-                // из которых мы берем их данные и передаем из значения в метаданные
-                foreach ($this->extractDatumFromAttribute($attribute) as $key => $value) {
-                    $propertyMetadata->addDatum($key, $value);
-                }
+                $this->handleAttribute($attribute, $propertyMetadata);
             }
         }
 
@@ -158,11 +84,62 @@ abstract class AttributeLoader implements LoaderInterface
     }
 
     /**
+     * Метод реализующий логику работы с каким либо атрибутом.
+     *
+     * @param MetadataAttribute $attribute
+     * @param ClassMetadataInterface|PropertyMetadataInterface $attributeOwnerMetadata
+     * @return void
+     */
+    private function handleAttribute(
+        MetadataAttribute $attribute,
+        ClassMetadataInterface|PropertyMetadataInterface $attributeOwnerMetadata
+    ): void
+    {
+        $groups = $attribute->getGroups();
+
+        // Если группы не указаны, используем '*'
+        if (empty($groups)) {
+            $groups = [MetadataAttribute::DEFAULT_GROUP];
+        }
+
+        foreach ($attribute as $attributePublicPropertyName => $attributePublicPropertyValue) {
+            if ('groups' === $attributePublicPropertyName || null === $attributePublicPropertyValue) {
+                continue;
+            }
+
+            foreach ($groups as $group) {
+                $attributeOwnerMetadata->addDatum(
+                    group: $group,
+                    key: $attribute->getKey().'.'.$attributePublicPropertyName,
+                    datum: $attributePublicPropertyValue
+                );
+            }
+        }
+    }
+
+    /**
+     * Получает существующие или создает новые метаданные свойства
+     */
+    private function getOrCreatePropertyMetadata(ClassMetadataInterface $classMetadata, string $propertyName): PropertyMetadataInterface
+    {
+        $propertiesMetadata = $classMetadata->getPropertiesMetadata();
+        
+        if (isset($propertiesMetadata[$propertyName])) {
+            return $propertiesMetadata[$propertyName];
+        }
+        
+        $propertyMetadata = new (static::getPropertyMetadataClass())($propertyName);
+        $classMetadata->addPropertyMetadata($propertyMetadata);
+        
+        return $propertyMetadata;
+    }
+
+    /**
      * Метод, проверяющий, будем ли мы обрабатывать данный атрибут в данном контексте?
      */
     protected function isKnownAttribute(int $target, string $attributeName): bool
     {
-        foreach (array_merge(static::getKnownAttributes($target), [GroupsAttribute::class]) as $knownAttribute) {
+        foreach (static::getKnownAttributes($target) as $knownAttribute) {
             if (is_a($attributeName, $knownAttribute, true)) {
                 return true;
             }
@@ -174,7 +151,7 @@ abstract class AttributeLoader implements LoaderInterface
     /**
      * Генератор интересующих нас атрибутов класса, свойства, метода.
      *
-     * @return iterable<int, GroupsAttribute|MetadataAttribute>
+     * @return iterable<int, MetadataAttribute>
      */
     protected function loadAttributes(\ReflectionClass|\ReflectionProperty|\ReflectionMethod $reflector): iterable
     {
@@ -199,6 +176,10 @@ abstract class AttributeLoader implements LoaderInterface
     {
         if ($attribute instanceof MetadataAttribute) {
             foreach ($attribute as $attributePublicPropertyName => $attributePublicPropertyValue) {
+                if (null === $attributePublicPropertyValue) {
+                    continue;
+                }
+
                 yield $attribute->getKey().'.'.$attributePublicPropertyName => $attributePublicPropertyValue;
             }
         }
