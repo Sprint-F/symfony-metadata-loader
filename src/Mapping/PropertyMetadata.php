@@ -28,9 +28,7 @@ abstract class PropertyMetadata implements PropertyMetadataInterface
 
     public function addDatum(string $group, string $key, mixed $datum): self
     {
-        if (!isset($this->data[$group][$key])) {
-            $this->data[$group][$key] = $datum;
-        }
+        $this->data[$group][$key] = $datum;
 
         return $this;
     }

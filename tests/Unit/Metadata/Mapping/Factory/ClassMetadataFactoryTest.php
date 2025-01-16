@@ -53,6 +53,28 @@ class AttrForFactoryTestA2 extends MetadataAttribute
     }
 }
 
+#[\Attribute(\Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)]
+class AttrForFactoryTestA3 extends MetadataAttribute
+{
+    public function __construct(
+        public readonly mixed $a1 = null,
+        public readonly mixed $a2 = null,
+        public readonly mixed $a3 = null,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
+    }
+
+    public function getKey(): string
+    {
+        return 'A';
+    }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
+    }
+}
+
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 class AttrForFactoryTestB1 extends MetadataAttribute
 {
@@ -72,6 +94,7 @@ class AttrForFactoryTestB1 extends MetadataAttribute
         return $this->groups;
     }
 }
+
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 class AttrForFactoryTestB2 extends MetadataAttribute
 {
@@ -91,6 +114,29 @@ class AttrForFactoryTestB2 extends MetadataAttribute
         return $this->groups;
     }
 }
+
+#[\Attribute(\Attribute::TARGET_PROPERTY | \Attribute::IS_REPEATABLE)]
+class AttrForFactoryTestB3 extends MetadataAttribute
+{
+    public function __construct(
+        public readonly mixed $b1 = null,
+        public readonly mixed $b2 = null,
+        public readonly mixed $b3 = null,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
+    }
+
+    public function getKey(): string
+    {
+        return 'B';
+    }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
+    }
+}
+
 #[\Attribute(\Attribute::TARGET_METHOD)]
 class AttrForFactoryTestC1 extends MetadataAttribute
 {
@@ -110,11 +156,34 @@ class AttrForFactoryTestC1 extends MetadataAttribute
         return $this->groups;
     }
 }
+
 #[\Attribute(\Attribute::TARGET_METHOD)]
 class AttrForFactoryTestC2 extends MetadataAttribute
 {
     public function __construct(
         public readonly mixed $c2,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
+    }
+
+    public function getKey(): string
+    {
+        return 'C';
+    }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
+    }
+}
+
+#[\Attribute(\Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
+class AttrForFactoryTestC3 extends MetadataAttribute
+{
+    public function __construct(
+        public readonly mixed $c1 = null,
+        public readonly mixed $c2 = null,
+        public readonly mixed $c3 = null,
         private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
     }
@@ -170,6 +239,24 @@ class ExtendedExample extends SimpleExample
     }
 }
 
+#[AttrForFactoryTestA3(a1: 1, a2: 2, groups: [MetadataAttribute::DEFAULT_GROUP, 'group_1'])]
+#[AttrForFactoryTestA3(a1: 1, groups: ['group_2'])]
+#[AttrForFactoryTestA3(a1: 4, a3: 3)]
+class RepeatableExample
+{
+    #[AttrForFactoryTestB3(b1: 1)]
+    #[AttrForFactoryTestB3(b1: 2, b2: 2, b3: 3, groups: [MetadataAttribute::DEFAULT_GROUP, 'group_1'])]
+    #[AttrForFactoryTestB3(b3: 3, groups: ['group_1'])]
+    public $x;
+
+    #[AttrForFactoryTestC3(c1: 1)]
+    #[AttrForFactoryTestC3(c1: 2, c2: 2, c3: 3, groups: [MetadataAttribute::DEFAULT_GROUP, 'group_1'])]
+    #[AttrForFactoryTestC3(c3: 3, groups: ['group_1'])]
+    public function getY()
+    {
+    }
+}
+
 // ---------------------------------------------------------------------------------------------------------------------
 // ---- Tests ----------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
@@ -186,9 +273,9 @@ class ClassMetadataFactoryTest extends \Codeception\Test\Unit
             protected static function getKnownAttributes(int $target): array
             {
                 return match ($target) {
-                    \Attribute::TARGET_CLASS => [AttrForFactoryTestA1::class, AttrForFactoryTestA2::class],
-                    \Attribute::TARGET_PROPERTY => [AttrForFactoryTestB1::class, AttrForFactoryTestB2::class],
-                    \Attribute::TARGET_METHOD => [AttrForFactoryTestC1::class, AttrForFactoryTestC2::class],
+                    \Attribute::TARGET_CLASS => [AttrForFactoryTestA1::class, AttrForFactoryTestA2::class, AttrForFactoryTestA3::class],
+                    \Attribute::TARGET_PROPERTY => [AttrForFactoryTestB1::class, AttrForFactoryTestB2::class, AttrForFactoryTestB3::class],
+                    \Attribute::TARGET_METHOD => [AttrForFactoryTestC1::class, AttrForFactoryTestC2::class, AttrForFactoryTestC3::class],
                     default => [],
                 };
             }
@@ -251,5 +338,32 @@ class ClassMetadataFactoryTest extends \Codeception\Test\Unit
         $this->assertSame(null, $metadata->getPropertiesMetadataByGroups()['y']->getDataByGroups()['B.b2'] ?? null);
         $this->assertSame(3, $metadata->getPropertiesMetadataByGroups()['y']->getDataByGroups()['C.c1'] ?? null);
         $this->assertSame(6, $metadata->getPropertiesMetadataByGroups()['y']->getDataByGroups()['C.c2'] ?? null);
+    }
+
+    public function testLoadMetadataForRepeatableClass()
+    {
+        $factory = new ClassMetadataFactory($this->loader);
+        $classMetadata = $factory->getMetadataFor(RepeatableExample::class);
+
+        $this->assertInstanceOf(ClassMetadataForFactoryTest::class, $classMetadata);
+        $this->assertSame(4, $classMetadata->getDataByGroups()['A.a1']);
+        $this->assertSame(null, $classMetadata->getDataByGroups()['A.a2']);
+        $this->assertSame(3, $classMetadata->getDataByGroups()['A.a3']);
+
+        $this->assertInstanceOf(AttrMetadataForFactoryTest::class, $classMetadata->getPropertiesMetadataByGroups()['x']);
+        $this->assertSame(2, $classMetadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['B.b1']);
+        $this->assertSame(2, $classMetadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['B.b2']);
+        $this->assertSame(3, $classMetadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['B.b3']);
+        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['x']->getDataByGroups(['group_1'])['B.b1']);
+        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['x']->getDataByGroups(['group_1'])['B.b2']);
+        $this->assertSame(3, $classMetadata->getPropertiesMetadataByGroups()['x']->getDataByGroups(['group_1'])['B.b3']);
+
+        $this->assertInstanceOf(AttrMetadataForFactoryTest::class, $classMetadata->getPropertiesMetadataByGroups()['y']);
+        $this->assertSame(2, $classMetadata->getPropertiesMetadataByGroups()['y']->getDataByGroups()['C.c1']);
+        $this->assertSame(2, $classMetadata->getPropertiesMetadataByGroups()['y']->getDataByGroups()['C.c2']);
+        $this->assertSame(3, $classMetadata->getPropertiesMetadataByGroups()['y']->getDataByGroups()['C.c3']);
+        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['y']->getDataByGroups(['group_1'])['C.c1']);
+        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['y']->getDataByGroups(['group_1'])['C.c2']);
+        $this->assertSame(3, $classMetadata->getPropertiesMetadataByGroups()['y']->getDataByGroups(['group_1'])['C.c3']);
     }
 }

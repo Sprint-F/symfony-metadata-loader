@@ -32,9 +32,7 @@ abstract class ClassMetadata implements ClassMetadataInterface
 
     public function addDatum(string $group, string $key, mixed $datum): self
     {
-        if (!isset($this->data[$group][$key])) {
-            $this->data[$group][$key] = $datum;
-        }
+        $this->data[$group][$key] = $datum;
 
         return $this;
     }
