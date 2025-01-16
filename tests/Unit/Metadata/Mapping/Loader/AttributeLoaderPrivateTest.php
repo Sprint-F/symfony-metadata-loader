@@ -11,18 +11,40 @@ use SprintF\Tests\Support\UnitTester;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class AttrClassA extends MetadataAttribute
 {
+    public function __construct(
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP]
+    )
+    {
+    }
+
     public function getKey(): string
     {
         return 'A';
+    }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class AttrClassB extends MetadataAttribute
 {
+    public function __construct(
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP]
+    )
+    {
+    }
+
     public function getKey(): string
     {
         return 'B';
+    }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 
@@ -38,18 +60,40 @@ class AttrClassC extends AttrClassB
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 class AttrPropertyA extends MetadataAttribute
 {
+    public function __construct(
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP]
+    )
+    {
+    }
+
     public function getKey(): string
     {
         return 'A';
+    }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 class AttrPropertyB extends MetadataAttribute
 {
+    public function __construct(
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP]
+    )
+    {
+    }
+
     public function getKey(): string
     {
         return 'B';
+    }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 
@@ -65,18 +109,40 @@ class AttrPropertyC extends AttrPropertyB
 #[\Attribute(\Attribute::TARGET_METHOD)]
 class AttrMethodA extends MetadataAttribute
 {
+    public function __construct(
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP]
+    )
+    {
+    }
+
     public function getKey(): string
     {
         return 'A';
+    }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 
 #[\Attribute(\Attribute::TARGET_METHOD)]
 class AttrMethodB extends MetadataAttribute
 {
+    public function __construct(
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP]
+    )
+    {
+    }
+
     public function getKey(): string
     {
         return 'B';
+    }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 
@@ -87,10 +153,6 @@ class AttrMethodC extends AttrMethodB
     {
         return 'C';
     }
-}
-
-class PropMetadata extends PropertyMetadata
-{
 }
 
 class AttributeLoaderPrivateTest extends \Codeception\Test\Unit

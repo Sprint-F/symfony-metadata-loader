@@ -118,10 +118,6 @@ abstract class AttributeLoader implements LoaderInterface
         }
 
         foreach ($attribute as $attributePublicPropertyName => $attributePublicPropertyValue) {
-            if ('groups' === $attributePublicPropertyName || null === $attributePublicPropertyValue) {
-                continue;
-            }
-
             foreach ($groups as $group) {
                 $attributeOwnerMetadata->addDatum(
                     group: $group,
@@ -191,10 +187,6 @@ abstract class AttributeLoader implements LoaderInterface
     {
         if ($attribute instanceof MetadataAttribute) {
             foreach ($attribute as $attributePublicPropertyName => $attributePublicPropertyValue) {
-                if (null === $attributePublicPropertyValue) {
-                    continue;
-                }
-
                 yield $attribute->getKey().'.'.$attributePublicPropertyName => $attributePublicPropertyValue;
             }
         }

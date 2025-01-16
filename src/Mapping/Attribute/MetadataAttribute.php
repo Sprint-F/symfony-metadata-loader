@@ -16,17 +16,10 @@ abstract class MetadataAttribute
      */
     abstract public function getKey(): string;
 
-    public function __construct(public readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP])
-    {
-    }
-
     /**
      * Группы к которым должны принадлежать метаданные.
      *
      * @return  array<int, string>
      */
-    public function getGroups(): array
-    {
-        return $this->groups;
-    }
+    abstract public function getGroups(): array;
 }

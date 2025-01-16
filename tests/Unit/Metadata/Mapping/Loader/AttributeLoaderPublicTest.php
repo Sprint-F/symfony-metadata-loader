@@ -17,114 +17,142 @@ use SprintF\Tests\Support\UnitTester;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class AttrForLoadTestClassX extends MetadataAttribute
 {
+    public function __construct(
+        public readonly mixed $x,
+        public readonly mixed $y = null,
+        public readonly mixed $z = null,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
+    }
+
     public function getKey(): string
     {
         return 'X';
     }
 
-    public function __construct(
-        readonly public mixed $x,
-        readonly public mixed $y = null,
-        readonly public mixed $z = null,
-        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
-    ) {
-        parent::__construct($groups);
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class AttrForLoadTestClassY extends MetadataAttribute
 {
+    public function __construct(
+        public readonly mixed $y,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
+    }
+
     public function getKey(): string
     {
         return 'Y';
     }
 
-    public function __construct(
-        readonly public mixed $y,
-        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
-    ) {
-        parent::__construct($groups);
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 class AttrForLoadTestPropA extends MetadataAttribute
 {
+    public function __construct(
+        public readonly mixed $a,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
+    }
+
     public function getKey(): string
     {
         return 'A';
     }
 
-    public function __construct(
-        readonly public mixed $a,
-        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
-    ) {
-        parent::__construct($groups);
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 class AttrForLoadTestPropB extends MetadataAttribute
 {
+    public function __construct(
+        public readonly mixed $b,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
+    }
+
     public function getKey(): string
     {
         return 'B';
     }
 
-    public function __construct(
-        readonly public mixed $b,
-        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
-    ) {
-        parent::__construct($groups);
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 
 #[\Attribute(\Attribute::TARGET_METHOD)]
 class AttrForLoadTestMethodA extends MetadataAttribute
 {
+    public function __construct(
+        public readonly mixed $a,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
+    }
+
     public function getKey(): string
     {
         return 'A';
     }
 
-    public function __construct(
-        readonly public mixed $a,
-        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
-    ) {
-        parent::__construct($groups);
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 
 #[\Attribute(\Attribute::TARGET_METHOD)]
 class AttrForLoadTestMethodB extends MetadataAttribute
 {
+    public function __construct(
+        public readonly mixed $b,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
+    }
+
     public function getKey(): string
     {
         return 'B';
     }
 
-    public function __construct(
-        readonly public mixed $b,
-        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
-    ) {
-        parent::__construct($groups);
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 
 #[\Attribute(\Attribute::TARGET_METHOD)]
 class AttrForLoadTestMethodC extends MetadataAttribute
 {
+    public function __construct(
+        public readonly mixed $c,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
+    }
+
     public function getKey(): string
     {
         return 'C';
     }
 
-    public function __construct(
-        readonly public mixed $c,
-        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
-    ) {
-        parent::__construct($groups);
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 
@@ -302,7 +330,7 @@ class AttributeLoaderPublicTest extends \Codeception\Test\Unit
 
         // Проверяем данные класса по дефолтной группе
         $metadataByGroup = $classMetadata->getDataByGroups([MetadataAttribute::DEFAULT_GROUP]);
-        $this->assertCount(3, $metadataByGroup);
+        $this->assertCount(4, $metadataByGroup);
         $this->assertEquals(1, $metadataByGroup['X.x']);
         $this->assertEquals(3, $metadataByGroup['X.z']);
 
@@ -334,7 +362,7 @@ class AttributeLoaderPublicTest extends \Codeception\Test\Unit
 
         // Проверяем данные класса для группы 1
         $metadataByGroup = $classMetadata->getDataByGroups(['group_1']);
-        $this->assertCount(1, $metadataByGroup);
+        $this->assertCount(3, $metadataByGroup);
         $this->assertEquals(1, $metadataByGroup['X.x']);
 
         // Проверяем свойства для разных групп (группы 1, 2, 4)
@@ -388,7 +416,7 @@ class AttributeLoaderPublicTest extends \Codeception\Test\Unit
 
         // Проверяем что данные попали в группу '*'
         $metadataByDefault = $classMetadata->getDataByGroups([MetadataAttribute::DEFAULT_GROUP]);
-        $this->assertCount(3, $metadataByDefault);
+        $this->assertCount(4, $metadataByDefault);
         $this->assertArrayHasKey('X.x', $metadataByDefault);
         $this->assertArrayHasKey('Y.y', $metadataByDefault);
         $this->assertEquals(1, $metadataByDefault['X.x']);

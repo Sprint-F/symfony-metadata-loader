@@ -17,90 +17,116 @@ use SprintF\Tests\Support\UnitTester;
 class AttrForFactoryTestA1 extends MetadataAttribute
 {
     public function __construct(
-        readonly public mixed $a1,
-        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+        public readonly mixed $a1,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
-        parent::__construct($groups);
     }
 
     public function getKey(): string
     {
         return 'A';
     }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
+    }
 }
+
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class AttrForFactoryTestA2 extends MetadataAttribute
 {
     public function __construct(
-        readonly public mixed $a2,
-        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+        public readonly mixed $a2,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
-        parent::__construct($groups);
     }
 
     public function getKey(): string
     {
         return 'A';
     }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
+    }
 }
+
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 class AttrForFactoryTestB1 extends MetadataAttribute
 {
     public function __construct(
-        readonly public mixed $b1,
-        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+        public readonly mixed $b1,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
-        parent::__construct($groups);
     }
 
     public function getKey(): string
     {
         return 'B';
+    }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 class AttrForFactoryTestB2 extends MetadataAttribute
 {
     public function __construct(
-        readonly public mixed $b2,
-        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+        public readonly mixed $b2,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
-        parent::__construct($groups);
     }
 
     public function getKey(): string
     {
         return 'B';
     }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
+    }
 }
 #[\Attribute(\Attribute::TARGET_METHOD)]
 class AttrForFactoryTestC1 extends MetadataAttribute
 {
     public function __construct(
-        readonly public mixed $c1,
-        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+        public readonly mixed $c1,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
-        parent::__construct($groups);
     }
 
     public function getKey(): string
     {
         return 'C';
+    }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 #[\Attribute(\Attribute::TARGET_METHOD)]
 class AttrForFactoryTestC2 extends MetadataAttribute
 {
     public function __construct(
-        readonly public mixed $c2,
-        ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+        public readonly mixed $c2,
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
     ) {
-        parent::__construct($groups);
     }
 
     public function getKey(): string
     {
         return 'C';
+    }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }
 
