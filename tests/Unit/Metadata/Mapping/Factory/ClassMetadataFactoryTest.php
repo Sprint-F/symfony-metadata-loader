@@ -239,18 +239,18 @@ class ExtendedExample extends SimpleExample
     }
 }
 
-#[AttrForFactoryTestA3(a1: 1, a2: 2, groups: [MetadataAttribute::DEFAULT_GROUP, 'group_1'])]
+#[AttrForFactoryTestA3(a1: 1, a2: 2, groups: ['*', 'group_1'])]
 #[AttrForFactoryTestA3(a1: 1, groups: ['group_2'])]
 #[AttrForFactoryTestA3(a1: 4, a3: 3)]
 class RepeatableExample
 {
     #[AttrForFactoryTestB3(b1: 1)]
-    #[AttrForFactoryTestB3(b1: 2, b2: 2, b3: 3, groups: [MetadataAttribute::DEFAULT_GROUP, 'group_1'])]
+    #[AttrForFactoryTestB3(b1: 2, b2: 2, b3: 3, groups: ['*', 'group_1'])]
     #[AttrForFactoryTestB3(b3: 3, groups: ['group_1'])]
     public $x;
 
     #[AttrForFactoryTestC3(c1: 1)]
-    #[AttrForFactoryTestC3(c1: 2, c2: 2, c3: 3, groups: [MetadataAttribute::DEFAULT_GROUP, 'group_1'])]
+    #[AttrForFactoryTestC3(c1: 2, c2: 2, c3: 3, groups: ['*', 'group_1'])]
     #[AttrForFactoryTestC3(c3: 3, groups: ['group_1'])]
     public function getY()
     {
