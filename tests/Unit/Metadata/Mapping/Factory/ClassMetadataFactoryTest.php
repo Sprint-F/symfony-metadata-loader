@@ -196,11 +196,11 @@ class ClassMetadataFactoryTest extends \Codeception\Test\Unit
         $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['C.c1'] ?? null);
         $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['C.c2'] ?? null);
 
-        $this->assertInstanceOf(AttrMetadataForFactoryTest::class, $classMetadata->getPropertiesMetadataByGroups()['getY']);
-        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['B.b1'] ?? null);
-        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['B.b2'] ?? null);
-        $this->assertSame(3, $classMetadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['C.c1'] ?? null);
-        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['C.c2'] ?? null);
+        $this->assertInstanceOf(AttrMetadataForFactoryTest::class, $classMetadata->getPropertiesMetadataByGroups()['y']);
+        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['y']->getDataByGroups()['B.b1'] ?? null);
+        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['y']->getDataByGroups()['B.b2'] ?? null);
+        $this->assertSame(3, $classMetadata->getPropertiesMetadataByGroups()['y']->getDataByGroups()['C.c1'] ?? null);
+        $this->assertSame(null, $classMetadata->getPropertiesMetadataByGroups()['y']->getDataByGroups()['C.c2'] ?? null);
     }
 
     public function testLoadMetadataForExtendedClass()
@@ -220,10 +220,10 @@ class ClassMetadataFactoryTest extends \Codeception\Test\Unit
         $this->assertSame(null, $metadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['C.c1'] ?? null);
         $this->assertSame(null, $metadata->getPropertiesMetadataByGroups()['x']->getDataByGroups()['C.c2'] ?? null);
 
-        $this->assertInstanceOf(AttrMetadataForFactoryTest::class, $metadata->getPropertiesMetadataByGroups()['getY']);
-        $this->assertSame(null, $metadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['B.b1'] ?? null);
-        $this->assertSame(null, $metadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['B.b2'] ?? null);
-        $this->assertSame(3, $metadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['C.c1'] ?? null);
-        $this->assertSame(6, $metadata->getPropertiesMetadataByGroups()['getY']->getDataByGroups()['C.c2'] ?? null);
+        $this->assertInstanceOf(AttrMetadataForFactoryTest::class, $metadata->getPropertiesMetadataByGroups()['y']);
+        $this->assertSame(null, $metadata->getPropertiesMetadataByGroups()['y']->getDataByGroups()['B.b1'] ?? null);
+        $this->assertSame(null, $metadata->getPropertiesMetadataByGroups()['y']->getDataByGroups()['B.b2'] ?? null);
+        $this->assertSame(3, $metadata->getPropertiesMetadataByGroups()['y']->getDataByGroups()['C.c1'] ?? null);
+        $this->assertSame(6, $metadata->getPropertiesMetadataByGroups()['y']->getDataByGroups()['C.c2'] ?? null);
     }
 }

@@ -363,20 +363,20 @@ class AttributeLoaderPublicTest extends \Codeception\Test\Unit
         $this->assertCount(3, $methodsMetadata);
 
         // Проверяем getFoo (группа 1)
-        $this->assertArrayHasKey('getFoo', $methodsMetadata);
-        $fooData = $methodsMetadata['getFoo']->getDataByGroups(['group_1']);
+        $this->assertArrayHasKey('foo', $methodsMetadata);
+        $fooData = $methodsMetadata['foo']->getDataByGroups(['group_1']);
         $this->assertEquals(1, $fooData['A.a']);
 
         // Проверяем что метод с invalid параметром не загружен
         $this->assertArrayNotHasKey('getFooButNotLoad', $methodsMetadata);
 
         // Проверяем getBaz (группы 1, 5)
-        $bazData = $methodsMetadata['getBaz']->getDataByGroups(['group_1', 'group_5']);
+        $bazData = $methodsMetadata['baz']->getDataByGroups(['group_1', 'group_5']);
         $this->assertEquals(3, $bazData['B.b']);
         $this->assertEquals(4, $bazData['C.c']);
 
         // Проверяем getBla (группы 1, 6, 7, 8)
-        $blaData = $methodsMetadata['getBla']->getDataByGroups(['group_6']);
+        $blaData = $methodsMetadata['bla']->getDataByGroups(['group_6']);
         $this->assertEquals(5, $blaData['A.a']);
     }
 

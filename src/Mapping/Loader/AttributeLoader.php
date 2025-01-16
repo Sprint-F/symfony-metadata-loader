@@ -69,9 +69,24 @@ abstract class AttributeLoader implements LoaderInterface
             }
         }
 
-        // Загружаем данные из атрибутов методов
+        // Загружаем данные из атрибутов методов, определенных в классе
         foreach ($reflectionClass->getMethods() as $method) {
-            $propertyName = lcfirst($method->name);
+            if ($method->getDeclaringClass()->name !== $className || 0 === count(iterator_to_array($this->loadAttributes($method)))) {
+                continue;
+            }
+
+            // в целях обратной совместимости с компонентом Serializer
+            if (0 === stripos($method->name, 'get') && $method->getNumberOfRequiredParameters()) {
+                continue;
+            }
+
+            // Нас интересуют только методы, начинающиеся с get|is|has|set
+            $accessorOrMutator = preg_match('/^(get|is|has|set)(.+)$/i', $method->name, $matches);
+            if (!$accessorOrMutator) {
+                continue;
+            }
+
+            $propertyName = lcfirst($matches[2]);
             $propertyMetadata = $this->getOrCreatePropertyMetadata($classMetadata, $propertyName);
 
             // Обрабатываем атрибуты метода
