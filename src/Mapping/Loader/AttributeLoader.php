@@ -102,10 +102,13 @@ abstract class AttributeLoader implements LoaderInterface
      * Метод реализующий логику работы с каким либо атрибутом.
      */
     private function handleAttribute(
-        MetadataAttribute $attribute,
+        object $attribute,
         ClassMetadataInterface|PropertyMetadataInterface $attributeOwnerMetadata,
     ): void {
-        $groups = $attribute->getGroups();
+        $groups = [];
+        if ($attribute instanceof MetadataAttribute) {
+            $groups = $attribute->getGroups();
+        }
 
         // Если группы не указаны, используем '*'
         if (empty($groups)) {
