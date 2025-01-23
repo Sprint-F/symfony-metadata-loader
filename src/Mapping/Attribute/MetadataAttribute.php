@@ -18,8 +18,12 @@ abstract class MetadataAttribute
 
     /**
      * Группы к которым должны принадлежать метаданные.
+     * По умолчанию возвращаем дефолтную группу, равную по смыслу "Все группы".
      *
-     * @return  array<int, string>
+     * @return array<int, string>
      */
-    abstract public function getGroups(): array;
+    public function getGroups(): array
+    {
+        return [self::DEFAULT_GROUP];
+    }
 }

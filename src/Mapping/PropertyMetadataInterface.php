@@ -20,8 +20,9 @@ interface PropertyMetadataInterface
     /**
      * Возвращает метаданные свойства по указанным группам.
      * Если группы не указаны, возвращает только данные для группы '*'.
-     * 
+     *
      * @param array<string> $groups
+     *
      * @return iterable<string, mixed>
      */
     public function getDataByGroups(array $groups = []): iterable;

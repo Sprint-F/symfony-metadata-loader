@@ -100,16 +100,11 @@ abstract class AttributeLoader implements LoaderInterface
 
     /**
      * Метод реализующий логику работы с каким либо атрибутом.
-     *
-     * @param MetadataAttribute $attribute
-     * @param ClassMetadataInterface|PropertyMetadataInterface $attributeOwnerMetadata
-     * @return void
      */
     private function handleAttribute(
         MetadataAttribute $attribute,
-        ClassMetadataInterface|PropertyMetadataInterface $attributeOwnerMetadata
-    ): void
-    {
+        ClassMetadataInterface|PropertyMetadataInterface $attributeOwnerMetadata,
+    ): void {
         $groups = $attribute->getGroups();
 
         // Если группы не указаны, используем '*'
@@ -117,31 +112,31 @@ abstract class AttributeLoader implements LoaderInterface
             $groups = [MetadataAttribute::DEFAULT_GROUP];
         }
 
-        foreach ($attribute as $attributePublicPropertyName => $attributePublicPropertyValue) {
+        foreach ($this->extractDatumFromAttribute($attribute) as $key => $datum) {
             foreach ($groups as $group) {
                 $attributeOwnerMetadata->addDatum(
                     group: $group,
-                    key: $attribute->getKey().'.'.$attributePublicPropertyName,
-                    datum: $attributePublicPropertyValue
+                    key: $key,
+                    datum: $datum
                 );
             }
         }
     }
 
     /**
-     * Получает существующие или создает новые метаданные свойства
+     * Получает существующие или создает новые метаданные свойства.
      */
     private function getOrCreatePropertyMetadata(ClassMetadataInterface $classMetadata, string $propertyName): PropertyMetadataInterface
     {
         $propertiesMetadata = $classMetadata->getPropertiesMetadata();
-        
+
         if (isset($propertiesMetadata[$propertyName])) {
             return $propertiesMetadata[$propertyName];
         }
-        
+
         $propertyMetadata = new (static::getPropertyMetadataClass())($propertyName);
         $classMetadata->addPropertyMetadata($propertyMetadata);
-        
+
         return $propertyMetadata;
     }
 

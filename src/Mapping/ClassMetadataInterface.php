@@ -34,6 +34,7 @@ interface ClassMetadataInterface
      * Если группы не указаны, возвращает только данные для группы '*'.
      *
      * @param array<string> $groups
+     *
      * @return iterable<string, mixed>
      */
     public function getDataByGroups(array $groups = []): iterable;
@@ -58,6 +59,7 @@ interface ClassMetadataInterface
      * Если группы не указаны, возвращает только свойства с данными для группы '*'.
      *
      * @param array<string> $groups
+     *
      * @return array<string, PropertyMetadataInterface>
      */
     public function getPropertiesMetadataByGroups(array $groups = []): array;

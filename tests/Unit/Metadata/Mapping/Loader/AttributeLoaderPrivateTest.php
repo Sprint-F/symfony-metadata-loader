@@ -12,9 +12,8 @@ use SprintF\Tests\Support\UnitTester;
 class AttrClassA extends MetadataAttribute
 {
     public function __construct(
-        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP]
-    )
-    {
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
     }
 
     public function getKey(): string
@@ -32,9 +31,8 @@ class AttrClassA extends MetadataAttribute
 class AttrClassB extends MetadataAttribute
 {
     public function __construct(
-        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP]
-    )
-    {
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
     }
 
     public function getKey(): string
@@ -61,9 +59,8 @@ class AttrClassC extends AttrClassB
 class AttrPropertyA extends MetadataAttribute
 {
     public function __construct(
-        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP]
-    )
-    {
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
     }
 
     public function getKey(): string
@@ -81,9 +78,8 @@ class AttrPropertyA extends MetadataAttribute
 class AttrPropertyB extends MetadataAttribute
 {
     public function __construct(
-        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP]
-    )
-    {
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
     }
 
     public function getKey(): string
@@ -110,9 +106,8 @@ class AttrPropertyC extends AttrPropertyB
 class AttrMethodA extends MetadataAttribute
 {
     public function __construct(
-        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP]
-    )
-    {
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
     }
 
     public function getKey(): string
@@ -130,9 +125,8 @@ class AttrMethodA extends MetadataAttribute
 class AttrMethodB extends MetadataAttribute
 {
     public function __construct(
-        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP]
-    )
-    {
+        private readonly ?array $groups = [MetadataAttribute::DEFAULT_GROUP],
+    ) {
     }
 
     public function getKey(): string
