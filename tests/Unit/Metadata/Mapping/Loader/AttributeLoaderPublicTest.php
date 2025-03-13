@@ -2,6 +2,7 @@
 
 namespace SprintF\Tests\Unit\Metadata\Mapping\Loader;
 
+use JetBrains\PhpStorm\NoReturn;
 use SprintF\Metadata\Mapping\Attribute\MetadataAttribute;
 use SprintF\Metadata\Mapping\ClassMetadata;
 use SprintF\Metadata\Mapping\ClassMetadataInterface;
@@ -259,6 +260,23 @@ class ForLoad4
     }
 }
 
+#[AttrForLoadTestClassX(x: 1, groups: ['group_1'])]
+#[AttrForLoadTestClassY(y: 2, groups: ['*'])]
+class ForLoad5
+{
+    #[AttrForLoadTestPropA(a: 1, groups: ['*'])]
+    public $foo;
+
+    #[AttrForLoadTestPropB(b: 2, groups: ['group_2'])]
+    protected $bar;
+
+    #[AttrForLoadTestPropB(b: 4, groups: ['group_2'])]
+    private $baz;
+
+    #[AttrForLoadTestPropB(b: 1, groups: ['group_3'])]
+    private $bla;
+}
+
 // ---------------------------------------------------------------------------------------------------------------------
 // ---- Tests ----------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
@@ -325,7 +343,7 @@ class AttributeLoaderPublicTest extends \Codeception\Test\Unit
 
         // Проверяем данные класса по группе group_1
         $metadataByGroup = $classMetadata->getDataByGroups(['group_1']);
-        $this->assertCount(1, $metadataByGroup);
+        $this->assertCount(4, $metadataByGroup);
         $this->assertEquals(2, $metadataByGroup['Y.y']);
 
         // Проверяем данные класса по дефолтной группе
@@ -457,5 +475,38 @@ class AttributeLoaderPublicTest extends \Codeception\Test\Unit
         // Проверяем что для несуществующей группы данных нет
         $metadataByNonExistentGroup = $classMetadata->getDataByGroups(['non_existent_group']);
         $this->assertCount(0, $metadataByNonExistentGroup);
+    }
+
+    public function testGlobalMetadataIsIncludedInGroups()
+    {
+        // Загружаем метаданные класса ForLoad5
+        $classMetadata = $this->loader->loadClassMetadata(ForLoad5::class);
+
+        // Проверяем метаданные для 'group_1'
+        $methodsMetadata = $classMetadata->getPropertiesMetadataByGroups(['group_1']);
+        $metadataOfFooProperty = $methodsMetadata['foo']->getDataByGroups(['group_1']);
+        $this->assertCount(1, $methodsMetadata);
+        $this->assertEquals(1, $metadataOfFooProperty['A.a']);
+
+        // Проверяем метаданные для 'group_2'
+        $methodsMetadata = $classMetadata->getPropertiesMetadataByGroups(['group_2']);
+        $metadataOfFooProperty = $methodsMetadata['foo']->getDataByGroups(['group_2']);
+        $metadataOfBarProperty = $methodsMetadata['bar']->getDataByGroups(['group_2']);
+        $metadataOfBazProperty = $methodsMetadata['baz']->getDataByGroups(['group_2']);
+
+        $this->assertCount(3, $methodsMetadata);
+        $this->assertEquals(2, $metadataOfBarProperty['B.b']);
+        $this->assertEquals(1, $metadataOfFooProperty['A.a']);
+        $this->assertEquals(4, $metadataOfBazProperty['B.b']);
+
+        // Проверяем метаданные для 'group_3'
+        $methodsMetadata = $classMetadata->getPropertiesMetadataByGroups(['group_3']);
+        $this->assertCount(2, $methodsMetadata);
+
+        // Проверяем получение всех данных по 'group_1', включая общие (*)
+        $metadataByGroup = $classMetadata->getDataByGroups(['group_1']);
+        $this->assertCount(4, $metadataByGroup);
+        $this->assertEquals(2, $metadataByGroup['Y.y']);
+        $this->assertEquals(1, $metadataByGroup['X.x']);
     }
 }

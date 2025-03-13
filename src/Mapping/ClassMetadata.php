@@ -44,12 +44,12 @@ abstract class ClassMetadata implements ClassMetadataInterface
 
     public function getDataByGroups(array $groups = []): iterable
     {
+        $result = $this->data[MetadataAttribute::DEFAULT_GROUP] ?? [];
+
         // Если группы не указаны или пустой массив, используем только '*'
         if (empty($groups)) {
-            return $this->data[MetadataAttribute::DEFAULT_GROUP] ?? [];
+            return $result;
         }
-
-        $result = [];
 
         // Затем добавляем/перезаписываем данные для конкретных групп
         foreach ($groups as $group) {
