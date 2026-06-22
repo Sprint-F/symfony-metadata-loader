@@ -5,8 +5,10 @@ namespace SprintF\Metadata\Mapping\Attribute;
 /**
  * Атрибут, управляющий группами метаданных.
  * Требует конкретной реализации в конкретной библиотеке.
+ *
+ * Закомментированный атрибут следует добавить к конкретным классам.
  */
-#[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_PROPERTY | \Attribute::TARGET_METHOD)]
+##[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_PROPERTY | \Attribute::TARGET_METHOD)]
 abstract class GroupsAttribute
 {
     /**
